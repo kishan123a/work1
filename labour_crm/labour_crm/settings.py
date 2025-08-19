@@ -220,22 +220,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # --- SECURITY SETTINGS FOR PRODUCTION ---
-
-# Read the SECRET_KEY from an environment variable
 SECRET_KEY = os.environ.get('SECRET_KEY')
-
-# DEBUG status should be False in production. Read from an environment variable.
 DEBUG = os.environ.get('DEBUG', '0') == '1'
-
-# Read your server's IP and domain name from an environment variable
-# Example value: "13.232.203.123,yourdomain.com"
 ALLOWED_HOSTS_str = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_str.split(',')]
 
+# Settings to work behind the Nginx reverse proxy for HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 
 # --- APPLICATION DEFINITION ---
-
-AUTH_USER_MODEL = 'auth.User' 
+AUTH_USER_MODEL = 'auth.User'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -245,7 +242,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'django.contrib.gis',  # Required for GIS support
+    'django.contrib.gis',
     'widget_tweaks',
     'registration',
     'pwa',
@@ -284,39 +281,28 @@ WSGI_APPLICATION = 'labour_crm.wsgi.application'
 
 
 # --- DATABASE CONFIGURATION FOR PRODUCTION ---
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.environ.get('POSTGRES_DB'),
         'USER': os.environ.get('POSTGRES_USER'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': os.environ.get('POSTGRES_HOST'), # This will be 'db' in Docker
+        'HOST': os.environ.get('POSTGRES_HOST'),
         'PORT': '5432',
     }
 }
 
 
 # --- PASSWORD VALIDATION ---
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 
 # --- INTERNATIONALIZATION ---
-
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
@@ -324,23 +310,13 @@ USE_TZ = True
 
 
 # --- STATIC & MEDIA FILES FOR PRODUCTION ---
-
-# The URL prefix for static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-# The URL prefix for user-uploaded files
 MEDIA_URL = '/media/'
-
-# The absolute path to the directory where collectstatic will gather static files
-# Nginx will serve files from this directory inside the container.
 STATIC_ROOT = '/app/staticfiles'
-
-# The absolute path where user-uploaded media files (like your images) will be stored.
-# This directory will be shared with Nginx.
 MEDIA_ROOT = '/app/media'
 
 
 # --- PWA SETTINGS ---
-
 PWA_APP_NAME = 'AgroIntel'
 PWA_APP_DESCRIPTION = "AgroIntel - Connecting Farmers with Labours"
 PWA_APP_THEME_COLOR = '#2196f3'
@@ -349,24 +325,14 @@ PWA_APP_DISPLAY = 'standalone'
 PWA_APP_SCOPE = '/'
 PWA_APP_START_URL = '/register/registration/'
 PWA_APP_ICONS = [
-    {
-        'src': '/static/images/android-chrome-192x192.png',
-        'sizes': '192x192'
-    },
-    {
-        'src': '/static/images/android-chrome-512x512.png',
-        'sizes': '512x512'
-    }
+    {'src': '/static/images/android-chrome-192x192.png', 'sizes': '192x192'},
+    {'src': '/static/images/android-chrome-512x512.png', 'sizes': '512x512'}
 ]
 PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'registration', 'static', 'registration', 'js', 'serviceworker.js')
 
 
 # --- DEFAULT PRIMARY KEY ---
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-
 
 
 # from pathlib import Path

@@ -1,4 +1,6 @@
 
+version: '3.8'
+
 services:
   web:
     build: .
@@ -9,17 +11,13 @@ services:
     expose:
       - 8000
     environment:
-      # Your application secrets
-      - SECRET_KEY=_a5#ybf*^z!t+7=n8s(m@w-6qtn2c6^o3x^!f8v8j&%2z@$t
+      - SECRET_KEY=your_super_strong_and_secret_key_here
       - DEBUG=0
-      - ALLOWED_HOSTS=13.232.203.123
-
-        # --- Add these lines for the superuser ---
+      - ALLOWED_HOSTS=kishan.kisanmitra.ai,13.232.203.123,web
       - DJANGO_SUPERUSER_USERNAME=admin
-      - DJANGO_SUPERUSER_EMAIL=kishan@kisanmitra.ai
-      - DJANGO_SUPERUSER_PASSWORD=work1234
-      #Credentials for your EXTERNAL AWS database
-      - POSTGRES_DB=registration_db # Make sure this is the correct DB name on AWS
+      - DJANGO_SUPERUSER_EMAIL=admin@example.com
+      - DJANGO_SUPERUSER_PASSWORD=a_strong_password_here
+      - POSTGRES_DB=supplysidelabourdb
       - POSTGRES_USER=supplysidelabour
       - POSTGRES_PASSWORD=z0k5NgbdYn5f8szqKSXx
       - POSTGRES_HOST=supplysidelabour.c12ggig2u4ig.ap-south-1.rds.amazonaws.com
@@ -28,8 +26,11 @@ services:
     image: nginx:stable-alpine
     ports:
       - "80:80"
+      - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d
+      - ./nginx:/etc/nginx/conf.d
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/lib/letsencrypt:/var/lib/letsencrypt:ro
       - staticfiles_volume:/app/staticfiles:ro
       - media_volume:/app/media:ro
     depends_on:

@@ -1,17 +1,23 @@
-#!/bin/bash
+FROM python:3.12
 
-# Exit immediately if a command exits with a non-zero status.
-set -e
+WORKDIR /app
 
-# Run database migrations
-echo "Applying database migrations..."
-python manage.py migrate
+RUN apt-get update && apt-get install -y \
+    gdal-bin \
+    libgdal-dev \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create the superuser using the custom command
-echo "Creating initial superuser..."
-python manage.py create_initial_superuser
+ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
+ENV C_INCLUDE_PATH=/usr/include/gdal
 
-# Start the Gunicorn web server
-echo "Starting Gunicorn server..."
-# startup.sh (AFTER)
-exec gunicorn labour_crm.wsgi:application --bind 0.0.0.0:${PORT:-8000}
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . /app/
+
+RUN chmod +x /app/startup.sh
+
+RUN python manage.py collectstatic --noinput
+
+CMD ["/app/startup.sh"]
