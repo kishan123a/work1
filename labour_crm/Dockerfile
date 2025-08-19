@@ -11,9 +11,6 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-ARG DATABASE_URL
-ENV DATABASE_URL=$DATABASE_URL
-
 # Environment variable for GDAL
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
@@ -22,8 +19,7 @@ ENV C_INCLUDE_PATH=/usr/include/gdal
 COPY requirements.txt /app/
 RUN pip install --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
-# (The top part of your Dockerfile remains the same)
-
+RUN pip install gunicorn
 
 # Copy the project files (this also copies startup.sh)
 COPY . /app/
@@ -34,11 +30,10 @@ RUN chmod +x /app/startup.sh
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Expose the port
+# Expose the port for internal communication
 EXPOSE 8000
 
 # Set the startup script as the command to run
-# This REPLACES your old CMD line
 CMD ["/app/startup.sh"]
 # # Use official Python image
 # FROM python:3.12

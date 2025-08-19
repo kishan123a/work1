@@ -1,31 +1,40 @@
 
-
 services:
-  db:
-    image: postgis/postgis:15-3.3
-    container_name: labour_crm_db
-    environment:
-      POSTGRES_DB: registration_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: work1234 # Host port 5555 -> Container port 5432
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
   web:
     build: .
-    container_name: labour_crm_web
     command: /app/startup.sh
     volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
+      - staticfiles_volume:/app/staticfiles
+      - media_volume:/app/media
+    expose:
+      - 8000
     environment:
-      POSTGRES_DB: registration_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: work1234
-      POSTGRES_HOST: db
+      # Your application secrets
+      - SECRET_KEY=_a5#ybf*^z!t+7=n8s(m@w-6qtn2c6^o3x^!f8v8j&%2z@$t
+      - DEBUG=0
+      - ALLOWED_HOSTS=13.232.203.123
+
+        # --- Add these lines for the superuser ---
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_EMAIL=kishan@kisanmitra.ai
+      - DJANGO_SUPERUSER_PASSWORD=work1234
+      #Credentials for your EXTERNAL AWS database
+      - POSTGRES_DB=registration_db # Make sure this is the correct DB name on AWS
+      - POSTGRES_USER=supplysidelabour
+      - POSTGRES_PASSWORD=z0k5NgbdYn5f8szqKSXx
+      - POSTGRES_HOST=supplysidelabour.c12ggig2u4ig.ap-south-1.rds.amazonaws.com
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d
+      - staticfiles_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+    depends_on:
+      - web
 
 volumes:
-  pgdata:
+  staticfiles_volume:
+  media_volume:

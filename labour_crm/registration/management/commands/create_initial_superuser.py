@@ -1,40 +1,35 @@
+# registration/management/commands/create_initial_superuser.py
+
 import os
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class Command(BaseCommand):
-    """
-    A Django management command to create a superuser from environment variables.
-    
-    This command is idempotent, meaning it can be run multiple times without
-    creating duplicate users or causing errors. It checks if a user with the
-    specified username already exists before attempting to create one.
-    """
-    help = 'Creates a superuser from environment variables if one does not exist'
+    help = 'Creates a superuser non-interactively using environment variables.'
 
     def handle(self, *args, **options):
-        # Read credentials from environment variables
         username = os.environ.get('DJANGO_SUPERUSER_USERNAME')
         email = os.environ.get('DJANGO_SUPERUSER_EMAIL')
         password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
 
-        # Check if all required environment variables are set
         if not all([username, email, password]):
             self.stdout.write(self.style.ERROR(
-                'Missing superuser environment variables. Please set DJANGO_SUPERUSER_USERNAME, '
-                'DJANGO_SUPERUSER_EMAIL, and DJANGO_SUPERUSER_PASSWORD.'
+                'Missing superuser environment variables (USERNAME, EMAIL, PASSWORD)'
             ))
             return
 
-        # Check if a superuser with that username already exists
-        if User.objects.filter(username=username).exists():
-            self.stdout.write(self.style.WARNING(f'Superuser "{username}" already exists. Skipping.'))
-        else:
-            # Create the superuser
-            self.stdout.write(self.style.SUCCESS(f'Creating superuser account for {username}'))
+        if not User.objects.filter(username=username).exists():
+            self.stdout.write(self.style.SUCCESS(
+                f'Creating superuser: {username}'
+            ))
             User.objects.create_superuser(
                 username=username,
                 email=email,
                 password=password
             )
-            self.stdout.write(self.style.SUCCESS('Superuser created successfully!'))
+        else:
+            self.stdout.write(self.style.WARNING(
+                f'Superuser "{username}" already exists.'
+            ))
